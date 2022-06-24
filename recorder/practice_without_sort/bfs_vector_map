@@ -1,0 +1,46 @@
+#include<bits/stdc++.h>
+using namespace std;
+//图论保存多条路径信息  ： bfs
+//map映射树  vector映射链表 与bfs配合可以达成map关系
+int n;
+struct node{
+    int end,weight;
+};
+
+vector<vector<node>>v(30005);
+int main(){
+    ios::sync_with_stdio(false);
+    cin.tie(0);
+    cin>>n;
+
+    int tot=0,maxLen=0,sumLen=0;
+    while (--n){
+        int start,end,weight;
+        cin>>start>>end>>weight;
+        v[start].push_back({end,weight});
+        tot+=weight;
+    }
+    queue<node>q;q.push({1,0});
+    while (!q.empty()){
+        node temp = q.front();
+        q.pop();
+        int len = v[temp.end].size();
+        if (!len){
+            maxLen = max(maxLen,temp.weight);
+//            sumLen+=temp.weight;  若在此途径节点不会被处理
+        }
+        else {
+            for (int i=0;i<len;++i){
+                node tt = v[temp.end][i];
+                tt.weight+=temp.weight;
+                q.push(tt);
+                sumLen += tt.weight;//这里正确
+            }
+
+        }
+
+    }
+    cout<<sumLen<<" "<<tot*2-maxLen<<endl;//最小生成树旅行商结论
+
+    return 0;
+}

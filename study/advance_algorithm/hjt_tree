@@ -1,0 +1,175 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+int n,m;
+unordered_map<int,int>_mp;
+const int MAXN = 2e5+10;
+struct node{
+    int val,l_son,r_son;
+}Tree[MAXN*40];//可持续化特点 大空间 多棵树
+int a[MAXN],b[MAXN];//a原始，b离散
+int root[MAXN*40];//维护根节点
+int cnt; //总的节点数目
+#define push_up(x) Tree[x].val = Tree[Tree[x].l_son].val+Tree[Tree[x].r_son].val
+void insert (int tar,int l,int r,int& cur,int pre){
+    cur = ++cnt;
+    Tree[cur]=Tree[pre];
+    if (l==r){
+        Tree[cur].val+=1;
+        return ;
+    }
+    int mid = l+r>>1;
+    if (tar<=mid){
+        insert(tar,l,mid,Tree[cur].l_son,Tree[pre].l_son);
+    }
+    else insert(tar,mid+1,r,Tree[cur].r_son,Tree[pre].r_son);
+    push_up(cur);
+
+}
+int build(int l ,int r){
+    int node = ++cnt;
+    if (l==r)return node;
+    int mid = l+r>>1;
+    Tree[node].l_son = build (l,mid);
+    Tree[node].r_son = build (mid+1,r);
+    return node;
+}
+
+int  query (int l,int r,int cur,int pre,int idx){
+    if (l==r)return l;
+    int val  = Tree[Tree[cur].l_son].val - Tree[Tree[pre].l_son].val;
+    int mid  = l+r>>1;
+    if (idx<=val){
+        return query (l,mid,Tree[cur].l_son,Tree[pre].l_son,idx);
+    }else return query (mid+1,r,Tree[cur].r_son,Tree[pre].r_son,idx-val);
+
+
+}
+
+
+int main(){
+    ios::sync_with_stdio(false);
+    cin>>n>>m;
+    for (int i=1;i<=n;++i)cin>>a[i],b[i]=a[i];
+    sort (b+1,b+1+n);
+    int num = unique(b+1,b+1+n)-b-1;
+//    cout <<num<<endl;
+    for (int i=1;i<=n;++i){
+        int  t = a[i];
+        a[i]=lower_bound(b+1,b+1+num,a[i])-b;
+        _mp[a[i]]=t;
+    }
+    build (1,num);
+
+    root[0]=1;
+    for (int i=1;i<=n;++i){
+        insert(a[i],1,num,root[i],root[i-1]);
+    }
+
+
+
+    for (int i=1;i<=m;++i){
+        int l,r,idx;
+        cin>>l>>r>>idx;
+        int t =query (1,num,root[r],root[l-1],idx);
+        cout<<_mp[t]<<"\n";
+    }
+
+
+    return 0;
+}
+
+/* 初学版本..
+#include<bits/stdc++.h>
+using namespace std;
+int n,m;
+const int MAXN = 2e6+10;
+int a[MAXN],b[MAXN];
+unordered_map<int,int>_map;
+int root[MAXN*4];//特点 维护多个根节点寻找区间
+
+int Tree[MAXN*4];//维护的是一个值域上的值
+
+int l_son[MAXN*4],r_son[MAXN*4];
+
+int LL[MAXN*4],RR[MAXN*4];
+
+int cnt;
+#define PushUp(x) Tree[x]=Tree[l_son[x]]+Tree[r_son[x]]
+
+int build (int l,int r){
+    int node = ++cnt;
+// 存储方式问题..忘记初始化区间信息
+    LL[node]=l,RR[node]=r;
+    if (l>=r){
+        return node;
+    }
+    LL[node]=l,RR[node]=r;
+    int mid = l+r>>1;
+    l_son[node]=build (l,mid);
+    r_son[node]=build (mid+1,r);
+    return node;
+}
+
+void insert (int tar,int& pos,int pre){
+    int l = LL[pre],r=RR[pre];
+//    LL[pos]=l,RR[pos]=r;
+    pos = ++cnt;
+    //完全拷贝结构体好些
+    Tree[pos]=Tree[pre],l_son[pos]=l_son[pre],r_son[pos]=r_son[pre],LL[pos]=LL[pre],RR[pos]=RR[pre];
+    if (l==r){
+        Tree[pos]+=1;
+        return ;
+    }
+    int mid = l+r>>1;
+    if (tar<=mid){
+        insert(tar,l_son[pos],l_son[pre]);
+    }
+    else insert(tar,r_son[pos],r_son[pre]);
+    PushUp(pos);
+}
+
+int query (int pre,int pos,int idx){
+    int l = LL[pre],r=RR[pre];
+    if (l==r)return l;
+    //用当前树左子树前缀和
+    int val = Tree[l_son[pos]]-Tree[l_son[pre]];
+    if (idx<=val){
+        return   query (l_son[pre],l_son[pos],idx);
+    }
+    else return query(r_son[pre],r_son[pos],idx-val);
+
+}
+
+
+
+
+int main(){
+    ios::sync_with_stdio(false);
+    cin>>n>>m;
+    for (int i=1;i<=n;++i)cin>>a[i],b[i]=a[i];
+    sort (b+1,b+1+n);
+    int num = unique(b+1,b+1+n)-b-1;
+
+    for (int i = 1; i<=n ; ++i){
+        int t = a[i];
+        a[i] = lower_bound(b+1,b+1+num,a[i])-b;
+        _map[a[i]]=t;
+    }
+    build(1,num);
+    root[0]=1;
+    for (int i=1;i<=n;++i){
+//        root[i]=++cnt;
+        insert(a[i],root[i],root[i-1]);
+    }
+    while (m--){
+        int l,r,idx;
+        cin>>l>>r>>idx;
+        int t= query(root[l-1],root[r],idx);
+        cout<<_map[t]<<"\n";
+    }
+
+    return 0;
+}
+
+*/
