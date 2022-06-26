@@ -3,6 +3,8 @@ using namespace std;
 
 typedef long long ll;
 typedef pair<int,int>PII;
+#define endl '\n'
+const int INF = 0x3f3f3f3f;
 
 int n,m,k,T;
 
