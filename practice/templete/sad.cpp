@@ -18,8 +18,8 @@ void solve(){
 
 int main(){
     
-    // freopen("input.txt","r");
-    // freopen("output.txt","w");
+    // freopen("input.txt","r",stdin);
+    // freopen("output.txt","w",stdout);
     io;
  
     solve();
